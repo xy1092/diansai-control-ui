@@ -18,7 +18,7 @@
 ## 安装
 
 ```bash
-git clone git@github.com:xy1092/diansai-control-ui.git
+git clone git@github.com:<your-github-user>/diansai-control-ui.git
 cd diansai-control-ui
 ./scripts/setup.sh
 ```
@@ -55,7 +55,7 @@ http://127.0.0.1:8765/
 手机模式下，手机和电脑都连接 `NUEDC-CAR-UART` 后，用手机浏览器打开电脑在热点里的地址，例如：
 
 ```text
-http://192.168.4.2:8765/
+http://<电脑在热点中的IP>:8765/
 ```
 
 如果手机打不开，优先确认手机 Wi-Fi 代理/VPN/私有 DNS 已关闭，并确认电脑防火墙允许 `wlan0` 入站访问 `8765/tcp`。

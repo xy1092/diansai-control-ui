@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NUEDC Car · PID Control</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-main">NUEDC</span>
+      <span class="brand-sub">CAR · PID</span>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="overview"><i>⌂</i><span>概览</span></button>
+      <button class="nav-item" data-view="pid"><i>≡</i><span>PID 调参</span></button>
+      <button class="nav-item" data-view="ai"><i>✦</i><span>AI 调试</span></button>
+      <button class="nav-item" data-view="params"><i>⚙</i><span>运行参数</span></button>
+      <button class="nav-item" data-view="logs"><i>▤</i><span>黑匣子</span></button>
+      <button class="nav-item" data-view="console"><i>›_</i><span>控制台</span></button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="conn-line">
+        <span class="dot" id="conn-dot"></span>
+        <span id="conn-text">未连接</span>
+      </div>
+      <div class="rate-line"><span id="rate-text">0 Hz</span> · <span id="frames-text">0 帧</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- top stat bar -->
+    <header class="topbar">
+      <div class="stat-card">
+        <div class="stat-icon spd">↗</div>
+        <div><div class="stat-label">左轮 meas</div><div class="stat-value" id="stat-l-meas">--</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon spd">↗</div>
+        <div><div class="stat-label">右轮 meas</div><div class="stat-value" id="stat-r-meas">--</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon line">⌇</div>
+        <div><div class="stat-label">循迹 bias</div><div class="stat-value" id="stat-line-bias">--</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon ang">∠</div>
+        <div><div class="stat-label">heading</div><div class="stat-value" id="stat-heading">--</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon mission">◎</div>
+        <div><div class="stat-label">任务/状态</div><div class="stat-value" id="stat-mission">H- IDLE</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon time">⧗</div>
+        <div><div class="stat-label">运行时间</div><div class="stat-value" id="stat-runtime">0.0 s</div></div>
+      </div>
+    </header>
+
+    <!-- connection bar -->
+    <section class="conn-bar">
+      <span class="conn-label">端口</span>
+      <input id="port-input" type="text" placeholder="/dev/ttyACM0 或 socket://192.168.x.x:3333">
+      <span class="conn-label">波特率</span>
+      <input id="baud-input" type="number" value="115200" min="1200" step="100">
+      <button id="btn-connect" class="btn primary">连接</button>
+      <button id="btn-disconnect" class="btn">断开</button>
+      <button id="btn-resume" class="btn ghost">恢复遥测</button>
+      <button id="btn-pause" class="btn ghost">暂停遥测</button>
+      <button id="btn-reset-pid" class="btn ghost">重置积分</button>
+      <span class="hint">提示 · ESP32 透传：socket://&lt;ip&gt;:3333</span>
+    </section>
+
+    <!-- views -->
+    <section class="view view-overview active" data-view="overview">
+      <div class="grid-pid">
+        <!-- L -->
+        <article class="card pid-card" data-ch="L">
+          <header class="card-head">
+            <div class="card-title">左轮速度环 <span class="badge spd">L</span></div>
+            <div class="card-actions">
+              <span class="kv"><span class="k">sp</span><span class="v" data-stat="sp">--</span></span>
+              <span class="kv"><span class="k">out</span><span class="v" data-stat="out">--</span></span>
+              <span class="kv"><span class="k">err</span><span class="v" data-stat="err">--</span></span>
+            </div>
+          </header>
+          <div class="card-body pid-body">
+            <div class="gauge-wrap"><canvas class="gauge" data-gauge="L" width="220" height="220"></canvas></div>
+            <div class="trace-wrap"><canvas class="trace" data-trace="L" width="600" height="220"></canvas></div>
+          </div>
+          <footer class="card-foot pid-tune">
+            <label>KP<input type="number" step="any" data-gain="L:KP"></label>
+            <label>KI<input type="number" step="any" data-gain="L:KI"></label>
+            <label>KD<input type="number" step="any" data-gain="L:KD"></label>
+            <button class="btn small primary" data-apply="L">写入</button>
+            <button class="btn small ghost" data-pull="L">读回</button>
+          </footer>
+        </article>
+
+        <!-- R -->
+        <article class="card pid-card" data-ch="R">
+          <header class="card-head">
+            <div class="card-title">右轮速度环 <span class="badge spd">R</span></div>
+            <div class="card-actions">
+              <span class="kv"><span class="k">sp</span><span class="v" data-stat="sp">--</span></span>
+              <span class="kv"><span class="k">out</span><span class="v" data-stat="out">--</span></span>
+              <span class="kv"><span class="k">err</span><span class="v" data-stat="err">--</span></span>
+            </div>
+          </header>
+          <div class="card-body pid-body">
+            <div class="gauge-wrap"><canvas class="gauge" data-gauge="R" width="220" height="220"></canvas></div>
+            <div class="trace-wrap"><canvas class="trace" data-trace="R" width="600" height="220"></canvas></div>
+          </div>
+          <footer class="card-foot pid-tune">
+            <label>KP<input type="number" step="any" data-gain="R:KP"></label>
+            <label>KI<input type="number" step="any" data-gain="R:KI"></label>
+            <label>KD<input type="number" step="any" data-gain="R:KD"></label>
+            <button class="btn small primary" data-apply="R">写入</button>
+            <button class="btn small ghost" data-pull="R">读回</button>
+          </footer>
+        </article>
+
+        <!-- LINE -->
+        <article class="card pid-card" data-ch="LINE">
+          <header class="card-head">
+            <div class="card-title">循迹环 <span class="badge line">LINE</span></div>
+            <div class="card-actions">
+              <span class="kv"><span class="k">bias</span><span class="v" data-stat="meas">--</span></span>
+              <span class="kv"><span class="k">strength</span><span class="v" id="line-strength">--</span></span>
+              <span class="kv"><span class="k">on</span><span class="v" id="line-on">--</span></span>
+            </div>
+          </header>
+          <div class="card-body pid-body">
+            <div class="gauge-wrap">
+              <canvas class="gauge bias" data-gauge="LINE" width="220" height="220"></canvas>
+            </div>
+            <div class="trace-wrap">
+              <canvas class="bars" id="line-bars" width="600" height="220"></canvas>
+            </div>
+          </div>
+          <footer class="card-foot pid-tune">
+            <label>KP<input type="number" step="any" data-gain="LINE:KP"></label>
+            <label>KI<input type="number" step="any" data-gain="LINE:KI"></label>
+            <label>KD<input type="number" step="any" data-gain="LINE:KD"></label>
+            <button class="btn small primary" data-apply="LINE">写入</button>
+            <button class="btn small ghost" data-pull="LINE">读回</button>
+          </footer>
+        </article>
+
+        <!-- ANG -->
+        <article class="card pid-card" data-ch="ANG">
+          <header class="card-head">
+            <div class="card-title">角度环 <span class="badge ang">ANG</span></div>
+            <div class="card-actions">
+              <span class="kv"><span class="k">target</span><span class="v" data-stat="sp">--</span></span>
+              <span class="kv"><span class="k">meas</span><span class="v" data-stat="meas">--</span></span>
+              <span class="kv"><span class="k">err</span><span class="v" data-stat="err">--</span></span>
+            </div>
+          </header>
+          <div class="card-body pid-body">
+            <div class="gauge-wrap"><canvas class="gauge heading" data-gauge="ANG" width="220" height="220"></canvas></div>
+            <div class="trace-wrap"><canvas class="trace" data-trace="ANG" width="600" height="220"></canvas></div>
+          </div>
+          <footer class="card-foot pid-tune">
+            <label>KP<input type="number" step="any" data-gain="ANG:KP"></label>
+            <label>KI<input type="number" step="any" data-gain="ANG:KI"></label>
+            <label>KD<input type="number" step="any" data-gain="ANG:KD"></label>
+            <button class="btn small primary" data-apply="ANG">写入</button>
+            <button class="btn small ghost" data-pull="ANG">读回</button>
+          </footer>
+        </article>
+      </div>
+    </section>
+
+    <section class="view view-pid" data-view="pid">
+      <div class="card">
+        <header class="card-head"><div class="card-title">PID 总览（同 概览 页面）</div></header>
+        <div class="card-body"><p class="muted">用 概览 页面调参更直观。本页保留是为了后期分通道大图细看。</p></div>
+      </div>
+    </section>
+
+    <section class="view view-ai" data-view="ai">
+      <div class="card">
+        <header class="card-head">
+          <div class="card-title">AI 调试助手</div>
+          <div class="card-actions">
+            <span class="muted" id="ai-status">等待采样</span>
+          </div>
+        </header>
+        <div class="card-body ai-body">
+          <div class="ai-controls">
+            <label>通道
+              <select id="ai-channel">
+                <option value="LINE">循迹环 LINE</option>
+                <option value="L">左轮速度 L</option>
+                <option value="R">右轮速度 R</option>
+                <option value="L,R">左右速度 L+R</option>
+                <option value="ANG">角度环 ANG</option>
+              </select>
+            </label>
+            <label>AI 引擎
+              <select id="ai-provider">
+                <option value="local">本地规则</option>
+                <option value="claude">Claude Code</option>
+                <option value="codex">Codex</option>
+              </select>
+            </label>
+            <label>采样窗口
+              <input id="ai-seconds" type="number" min="1" max="30" step="1" value="8">
+            </label>
+            <label>步进强度
+              <input id="ai-aggr" type="range" min="0.1" max="1" step="0.1" value="0.5">
+            </label>
+            <label>最大轮数
+              <input id="ai-rounds" type="number" min="1" max="50" step="1" value="12">
+            </label>
+            <button id="btn-ai-analyze" class="btn primary">分析建议</button>
+            <button id="btn-ai-apply" class="btn">应用建议</button>
+            <button id="btn-ai-auto-start" class="btn primary">开始自动</button>
+            <button id="btn-ai-auto-stop" class="btn">停止</button>
+          </div>
+          <div class="ai-auto-strip">
+            <span id="ai-auto-state">自动调试未运行</span>
+            <span id="ai-auto-round">0 / 0 轮</span>
+            <span id="ai-auto-stable">稳定 0 轮</span>
+            <span id="ai-auto-reason"></span>
+          </div>
+          <div id="ai-results" class="ai-results">
+            <div class="muted">连接小车并跑几秒遥测后，点击“分析建议”。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view view-params" data-view="params">
+      <div class="card">
+        <header class="card-head"><div class="card-title">运行参数</div>
+          <div class="card-actions">
+            <button class="btn small ghost" id="btn-cfgdump">读回当前值</button>
+          </div>
+        </header>
+        <div class="card-body">
+          <div id="params-grid" class="params-grid"></div>
+          <p class="muted">字段会在连接后自动拉取（车端用 <code>$CFGDUMP</code> 回送）。输入新值后点"写入"。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view view-logs" data-view="logs">
+      <div class="card">
+        <header class="card-head"><div class="card-title">RAM 黑匣子</div>
+          <div class="card-actions"><span id="bb-status" class="muted">未导出</span></div>
+        </header>
+        <div class="card-body log-grid">
+          <button class="btn" data-log="enable">开启 LOG</button>
+          <button class="btn" data-log="disable">停止 LOG</button>
+          <button class="btn" data-log="clear">清空</button>
+          <button class="btn primary" data-log="dump">导出</button>
+          <button class="btn" id="btn-bb-save">保存 CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <header class="card-head"><div class="card-title">CSV 日志</div></header>
+        <div class="card-body"><div class="muted" id="csv-path">尚未连接</div></div>
+      </div>
+    </section>
+
+    <section class="view view-console" data-view="console">
+      <div class="card console-card">
+        <header class="card-head"><div class="card-title">原始消息 / 自定义命令</div>
+          <div class="card-actions">
+            <button class="btn small ghost" id="btn-clear-log">清屏</button>
+          </div>
+        </header>
+        <div class="card-body">
+          <pre id="console-out" class="console"></pre>
+          <form id="cmd-form" class="cmd-row">
+            <input id="cmd-input" type="text" placeholder="$SET,L,KP,580  或者  $CFGSET,spd_max,0.7">
+            <button class="btn primary" type="submit">发送</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

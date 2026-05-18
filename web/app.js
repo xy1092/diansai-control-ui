@@ -340,7 +340,9 @@ function refreshGainInputs() {
       const el = document.querySelector(`[data-gain="${ch}:${k.toUpperCase()}"]`);
       if (!el) continue;
       if (document.activeElement === el) continue;
-      if (g[k]) el.value = (+g[k]).toFixed(4).replace(/\.?0+$/, "");
+      if (g[k] !== null && g[k] !== undefined) {
+        el.value = (+g[k]).toFixed(4).replace(/\.?0+$/, "") || "0";
+      }
     }
   }
 }

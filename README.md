@@ -25,35 +25,40 @@ cd diansai-control-ui
 
 ## 启动
 
-USB 串口：
+推荐用模式编号启动：
+
+```bash
+./scripts/start.sh 0   # 有线 USB，默认 /dev/ttyACM0
+./scripts/start.sh 1   # ESP32 Wi-Fi 透传，只在电脑本机打开
+./scripts/start.sh 2   # 手机模式，监听 0.0.0.0:8765
+```
+
+有线端口不是默认值时：
+
+```bash
+./scripts/start.sh 0 /dev/ttyACM1
+```
+
+仍然支持直接传连接地址：
 
 ```bash
 ./scripts/start.sh /dev/ttyACM0
-```
-
-ESP32 Wi-Fi 透传：
-
-```bash
 ./scripts/start.sh socket://192.168.4.1:3333
 ```
 
-启动后默认打开：
+启动后默认电脑访问：
 
 ```text
 http://127.0.0.1:8765/
 ```
 
-如果要让手机访问电脑上的面板：
-
-```bash
-HOST=0.0.0.0 ./scripts/start.sh socket://192.168.4.1:3333
-```
-
-然后手机浏览器打开电脑在同一网络下的地址，例如：
+手机模式下，手机和电脑都连接 `NUEDC-CAR-UART` 后，用手机浏览器打开电脑在热点里的地址，例如：
 
 ```text
 http://192.168.4.2:8765/
 ```
+
+如果手机打不开，优先确认手机 Wi-Fi 代理/VPN/私有 DNS 已关闭，并确认电脑防火墙允许 `wlan0` 入站访问 `8765/tcp`。
 
 ## AI 调试
 

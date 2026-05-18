@@ -91,9 +91,9 @@
             <div class="trace-wrap"><canvas class="trace" data-trace="L" width="600" height="220"></canvas></div>
           </div>
           <footer class="card-foot pid-tune">
-            <label>KP<input type="number" step="any" data-gain="L:KP"></label>
-            <label>KI<input type="number" step="any" data-gain="L:KI"></label>
-            <label>KD<input type="number" step="any" data-gain="L:KD"></label>
+            <label>KP<input type="number" step="any" value="0" data-gain="L:KP"></label>
+            <label>KI<input type="number" step="any" value="0" data-gain="L:KI"></label>
+            <label>KD<input type="number" step="any" value="0" data-gain="L:KD"></label>
             <button class="btn small primary" data-apply="L">写入</button>
             <button class="btn small ghost" data-pull="L">读回</button>
           </footer>
@@ -114,9 +114,9 @@
             <div class="trace-wrap"><canvas class="trace" data-trace="R" width="600" height="220"></canvas></div>
           </div>
           <footer class="card-foot pid-tune">
-            <label>KP<input type="number" step="any" data-gain="R:KP"></label>
-            <label>KI<input type="number" step="any" data-gain="R:KI"></label>
-            <label>KD<input type="number" step="any" data-gain="R:KD"></label>
+            <label>KP<input type="number" step="any" value="0" data-gain="R:KP"></label>
+            <label>KI<input type="number" step="any" value="0" data-gain="R:KI"></label>
+            <label>KD<input type="number" step="any" value="0" data-gain="R:KD"></label>
             <button class="btn small primary" data-apply="R">写入</button>
             <button class="btn small ghost" data-pull="R">读回</button>
           </footer>
@@ -141,9 +141,9 @@
             </div>
           </div>
           <footer class="card-foot pid-tune">
-            <label>KP<input type="number" step="any" data-gain="LINE:KP"></label>
-            <label>KI<input type="number" step="any" data-gain="LINE:KI"></label>
-            <label>KD<input type="number" step="any" data-gain="LINE:KD"></label>
+            <label>KP<input type="number" step="any" value="0" data-gain="LINE:KP"></label>
+            <label>KI<input type="number" step="any" value="0" data-gain="LINE:KI"></label>
+            <label>KD<input type="number" step="any" value="0" data-gain="LINE:KD"></label>
             <button class="btn small primary" data-apply="LINE">写入</button>
             <button class="btn small ghost" data-pull="LINE">读回</button>
           </footer>
@@ -164,9 +164,9 @@
             <div class="trace-wrap"><canvas class="trace" data-trace="ANG" width="600" height="220"></canvas></div>
           </div>
           <footer class="card-foot pid-tune">
-            <label>KP<input type="number" step="any" data-gain="ANG:KP"></label>
-            <label>KI<input type="number" step="any" data-gain="ANG:KI"></label>
-            <label>KD<input type="number" step="any" data-gain="ANG:KD"></label>
+            <label>KP<input type="number" step="any" value="0" data-gain="ANG:KP"></label>
+            <label>KI<input type="number" step="any" value="0" data-gain="ANG:KI"></label>
+            <label>KD<input type="number" step="any" value="0" data-gain="ANG:KD"></label>
             <button class="btn small primary" data-apply="ANG">写入</button>
             <button class="btn small ghost" data-pull="ANG">读回</button>
           </footer>
@@ -286,6 +286,6 @@
   </main>
 </div>
 
-<script src="app.js"></script>
+<script src="app.js?v=zero-gains-20260518"></script>
 </body>
 </html>
